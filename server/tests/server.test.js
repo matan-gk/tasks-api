@@ -4,8 +4,17 @@ const request = require('supertest');
 const {app} = require('./../server');
 const {Task} = require('./../models/task');
 
+const testTasks = [
+    {title: 'first test task'},
+    {title: 'second test task'}
+];
+
+
 beforeEach((done) => {
-    Task.remove({}).then(() => done());
+    Task.remove({}).then(() => {
+        return Task.insertMany(testTasks)
+    }).then(() => done());
+
 })
 
 describe ('POST /tasks', () => {
@@ -24,8 +33,8 @@ describe ('POST /tasks', () => {
             }
 
             Task.find().then((tasks) => {
-                expect(tasks.length).toBe(1);
-                expect(tasks[0].title).toBe(title);
+                expect(tasks.length).toBe(3);
+                expect(tasks[2].title).toBe(title);
                 done();
             }).catch((e) => done(e));
         });
