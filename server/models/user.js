@@ -1,9 +1,7 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const validator = require('validator'); 
-// npm i bcryptjs@2.3.0 --save
 const bcrypt = require('bcryptjs');
-
 
 const saltSecret = 'crcgcrew5@4^t4%grtg67b$#%*g4v5T';
 
@@ -62,6 +60,23 @@ userSchema.statics.findByToken = function (token) {
         '_id': decodedJwt._id,
         'tokens.token': token,
         'tokens.access': 'auth'
+    });
+};
+
+userSchema.statics.findByCredentials = function (email, password) {
+    var User = this;
+
+    return User.findOne({email}).then((user) => {
+        if (!user) {
+            return Promise.reject();
+        }
+
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, user.password, (err, res) => {
+                if (res) resolve(user);
+                else reject();
+            });
+        });
     });
 };
 
