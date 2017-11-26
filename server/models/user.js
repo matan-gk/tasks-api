@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const validator = require('validator'); 
+// npm i bcryptjs@2.3.0 --save
+const bcrypt = require('bcryptjs');
+
 
 const saltSecret = 'crcgcrew5@4^t4%grtg67b$#%*g4v5T';
 
@@ -61,6 +64,21 @@ userSchema.statics.findByToken = function (token) {
         'tokens.access': 'auth'
     });
 };
+
+userSchema.pre('save', function (next) {
+    var user = this;
+
+    if (user.isModified('password')) {
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, hashedPassword) => {
+                user.password = hashedPassword;
+                next();
+            });
+        });
+    } else {
+        next();
+    }
+});
 
 var User = mongoose.model('user', userSchema);
 
