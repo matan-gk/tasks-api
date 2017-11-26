@@ -8,6 +8,7 @@ const {ObjectID} = require('mongodb');
 var {mongoose} = require('./db/mongoose');
 var {Task} = require('./models/task');
 var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate');
 
 var app = express();
 const listenPort = process.env.PORT;
@@ -26,7 +27,6 @@ app.post('/tasks', (req, res) => {
         res.status(400).send(err);
     });
 });
-
 
 app.get('/tasks', (req, res) => {
     Task.find({}).then((tasks) => {
@@ -98,6 +98,26 @@ app.patch('/tasks/:taskId', (req, res) => {
             res.status(400);
         })
     }
+});
+
+// Add a new user
+app.post('/users', (req, res) => {
+    var newUser = new User ({
+        email: req.body.email,
+        password: req.body.password
+    });
+
+    newUser.save().then(() => {
+        return newUser.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send({newUser});
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
+});
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
 });
 
 app.listen(listenPort, () => {
