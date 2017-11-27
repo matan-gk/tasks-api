@@ -11,6 +11,7 @@ userSchema = new mongoose.Schema({
         minlength: 1,
         unique: true,
         validate: {
+            isAsync: false,
             validator: validator.isEmail,
             message: '{VALUE} is not a valid email'
         }
@@ -31,6 +32,16 @@ userSchema = new mongoose.Schema({
         }
     }]
 });
+
+userSchema.methods.toJSON = function () {
+    var user = this;
+    var userToReturn = {
+        _id: user._id,
+        email: user.email
+    }
+
+    return userToReturn;
+};
 
 userSchema.methods.generateAuthToken = function () {
     var user = this;
